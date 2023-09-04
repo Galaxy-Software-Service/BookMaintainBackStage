@@ -1,0 +1,34 @@
+﻿
+@{
+    ViewBag.Title = "BorrowedRecord";
+}
+
+<h2>借閱紀錄</h2>
+
+<div style="float: right;">
+    @Html.ActionLink("返回", "Index", "Book", null, new { @class = "btn btn-default" })
+</div>
+<br />
+<br />
+<table class="table table-bordered table-striped sortable">
+    <thead>
+        <tr>
+            <th>借閱日期</th>
+            <th>借閱人員編號</th>
+            <th>英文姓名</th>
+            <th>中文姓名</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in (List<BookMaintainBackStage.Models.BookEditArg>)ViewBag.BorrowedRecordResult)
+        {
+            <tr>
+                <td class="col-md-3">@item.LendDate</td>
+                <td class="col-md-3">@item.KeeperID </td>
+                <td class="col-md-3">@item.UserEname</td>
+                <td class="col-md-3">@item.UserCname</td>
+            </tr>
+        }
+    </tbody>
+
+</table>

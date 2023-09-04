@@ -1,0 +1,137 @@
+﻿@model BookMaintainBackStage.Models.BookEditArg
+
+@{
+    ViewBag.Title = "編輯書籍";
+}
+<h2>編輯書籍</h2>
+
+@using (Html.BeginForm("Edit", "Book"))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.BookName, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextBoxFor(model => model.BookName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.BookName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.BookAuthor, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextBoxFor(model => model.BookAuthor, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.BookAuthor, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.BookPublisher, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextBoxFor(model => model.BookPublisher, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.BookPublisher, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.BookNote, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextAreaFor(model => model.BookNote, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.BookNote, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.BookBoughtDate, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextBoxFor(model => model.BookBoughtDate, new { @class = "form-control", @type = "Date" })
+                @Html.ValidationMessageFor(model => model.BookBoughtDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.BookClassID, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.BookClassID, (IEnumerable<SelectListItem>)ViewBag.CategorySelectList, "請選擇", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.BookClassID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.BookStatusCode, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.BookStatusCode, (IEnumerable<SelectListItem>)ViewBag.BookStatusSelectList, "請選擇", new { @class = "form-control", id="bookStatusSelect" })
+                @Html.ValidationMessageFor(model => model.BookStatusCode, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.UserFullName, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+
+                @Html.DropDownListFor(model => model.KeeperID, (IEnumerable<SelectListItem>)ViewBag.UserFullNameSelectList, "請選擇", new { @class = "form-control", id = "book_keeper" })
+                @Html.ValidationMessageFor(model => model.KeeperID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-4 col-md-10">
+                @Html.ActionLink("刪除", "Delete", "Book", null, new { @class = "btn btn-default", id = "btnDelete" })
+                @Html.HiddenFor(model => model.BookStatusCode, new { @class = "hidBookStatus",id = "hidBookStatus" })
+                @Html.HiddenFor(model => model.BookID, new { @class = "hidBookId", id = "hidBookId" })
+                <input type="submit" value="存檔" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+ @ViewBag.xxx
+<div>
+    @Html.ActionLink("返回", "Index", "Book", null, new { @class = "btn btn-default" })
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        if ($("#bookStatusSelect").val() == "A" || $("#bookStatusSelect").val() == "U") {
+            $("#book_keeper").attr('disabled', 'disabled');
+        }
+        $("#btnDelete").click(function (e) {
+            e.preventDefault();
+            var bookStatus = $("#hidBookStatus").val();
+            var bookId = $("#hidBookId").val();
+            if (bookStatus == "B") {
+                alert("書籍狀態為已借出，故不可刪除")
+            } else {
+                if (confirm("是否刪除書籍?")) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/Book/Delete",
+                        data: "BookID=" + bookId,
+                        dataType: "json",
+                        success: function (response) {
+                            alert("刪除成功");
+                            window.location.href = '/Book/Index';
+                        }, error: function (error) {
+                            alert("系統發生錯誤");
+                        }
+                    });
+                    /*return false;   不知為何要用return false*/
+                }
+            }
+        });
+        $("#bookStatusSelect").on("change keyup click input", function (e) {
+            e.preventDefault();
+            console.log($(this).val());
+            if ($(this).val() === "A" || $(".btnBookStatus").val() == "U") {
+                $("#book_keeper").val("");
+                $("#book_keeper").attr('disabled', 'disabled');
+            } else {
+                $("#book_keeper").attr('disabled', false);
+            }
+        });
+       
+        
+    });
+
+</script>

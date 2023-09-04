@@ -1,0 +1,135 @@
+﻿@{
+    ViewBag.Title = "首頁";
+}
+@model BookMaintainBackStage.Models.BookSearchArg
+
+
+<main>
+    <h3 class="navbar-title">圖書維護</h3>
+
+
+    @using (Html.BeginForm("Index", "Book"))
+    {
+        <div class="form-horizontal">
+
+            @*//書籍資料查詢框*@
+            @*//書名*@
+            <div class="form-group">
+                @Html.LabelFor(model => model.BookName, htmlAttributes: new { @class = "control-label col-md-1" })
+                <div class="col-md-10">
+                    @Html.TextBoxFor(model => model.BookName, new { @class = "form-control" })
+                </div>
+            </div>
+
+            @*//圖書類別*@
+            <div class="form-group">
+                @Html.LabelFor(model => model.BookClassID, htmlAttributes: new { @class = "control-label col-md-1" })
+                <div class="col-md-10">
+                    @Html.DropDownListFor(model => model.BookClassID, (IEnumerable<SelectListItem>)ViewBag.CategorySelectList, "請選擇", new { @class = "form-control" })
+                </div>
+            </div>
+
+            @*//借閱人*@
+            <div class="form-group">
+                @Html.LabelFor(model => model.KeeperID, htmlAttributes: new { @class = "control-label col-md-1" })
+                <div class="col-md-10">
+                    @Html.DropDownListFor(model => model.KeeperID, (IEnumerable<SelectListItem>)ViewBag.UserEnameSelectList, "請選擇", new { @class = "form-control" })
+                </div>
+            </div>
+
+            @*//借閱狀態*@
+            <div class="form-group">
+                @Html.LabelFor(model => model.BookStatusCode, htmlAttributes: new { @class = "control-label col-md-1" })
+                <div class="col-md-10">
+                    @Html.DropDownListFor(model => model.BookStatusCode, (IEnumerable<SelectListItem>)ViewBag.BookStatusSelectList, "請選擇", new { @class = "form-control" })
+                </div>
+            </div>
+
+            @*//相關按鈕*@
+            <div class="form-group">
+                <div class="col-md-1">
+                </div>
+                <div class="col-md-11">
+                    <input type="submit" value="查詢" id="bookSearchBtn" name="bookSearchBtn" class = "btn btn-default"/>
+                    <input type="reset" value="清除" id="bookSearchResetBtn" name="bookSearchResetBtn" class = "btn btn-default"/>
+                    @Html.ActionLink("新增", "Create", "Book", null, new { @class = "btn btn-default", id = "bookAddBtn" })
+
+                </div>
+            </div>
+
+            @*// 若點擊[查尋]btn*@
+            @if (ViewBag.SearchResult != null)
+            {
+                <table class="table table-bordered table-striped sortable">
+                    <thead>
+                        <tr id>
+                            <th>圖書類別</th>
+                            <th>書名</th>
+                            <th>購書日期</th>
+                            <th>借閱狀態</th>
+                            <th>借閱人</th>
+                            <td></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in (List<BookMaintainBackStage.Models.BookEditArg>)ViewBag.SearchResult)
+                        {
+                        <tr id='@item.BookID'>
+                            <td class="col-md-2">@item.BookClassName</td>
+
+                            @*點選超連結後連結到書籍明細畫面*@
+                            <td class="col-md-5">
+                                @if (@item.BookName != "")
+                                {@Html.ActionLink(@item.BookName, "Detail", new { bookID = @item.BookID })}
+                            </td>
+                            <td class="col-md-1">@item.BookBoughtDate.Replace('-', '/')</td>
+                            <td class="col-md-1">@item.BookStatusName </td>
+                            <td>@item.UserEname </td>
+                            <td class="col-md-offset-2">
+                                @Html.ActionLink("借閱紀錄", "BorrowedRecord", "Book", new { bookID = @item.BookID }, new { @class = "btn btn-default" })
+                                @Html.ActionLink("編輯", "Edit", new {bookID = @item.BookID}, new { @class = "btnEdit btn btn-default" })
+                                @Html.ActionLink("刪除", "Delete", "Book", null, new { @class = "btnDelete btn btn-default" })
+
+                                <input class="hidBookId" type="hidden" value=' @item.BookID' />
+                                <input class="hidBookStatus" type="hidden" value=' @item.BookStatusCode' />
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>      
+    }
+</main>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".btnDelete").click(function (e) {
+            e.preventDefault();
+            if (confirm("是否刪除書籍?")) {
+                var tr = $(this).closest('tr');
+                $.ajax({
+                    type: "POST",
+                    url: "/Book/Delete",
+                    data: {
+                        bookID: $(this).next().val()
+                    },
+                    dataType: "json",
+                    success: function (result) {
+                        $(tr).remove();
+                        debugger
+                        alert("刪除成功");
+                    }, error: function (error) {
+                        debugger
+                        alert(error.responseText);
+                    }
+                });
+            }      
+        });
+
+        $("#bookSearchResetBtn").click(function (e) {
+            e.preventDefault();
+            window.location.href = '/Book/Index';
+        });
+    });
+
+</script>
